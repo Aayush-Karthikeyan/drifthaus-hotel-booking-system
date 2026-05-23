@@ -1,10 +1,12 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
+    user: process.env.BREVO_LOGIN,
+    pass: process.env.BREVO_SMTP_KEY,
   },
 });
 
@@ -132,7 +134,7 @@ async function sendBookingConfirmation(opts) {
 `;
 
   await transporter.sendMail({
-    from: `"Drifthaus" <${process.env.GMAIL_USER}>`,
+    from: `"Drifthaus" <${process.env.BREVO_LOGIN}>`,
     to: toEmail,
     subject: `Booking Confirmed – ${title} 🏨`,
     html,
