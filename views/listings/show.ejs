@@ -23,16 +23,88 @@
             </div>
         </div>
 
-        <% if (currUser && listing.owner && listing.owner._id && listing.owner._id.equals(currUser._id)) { %>
-            <div class="btns">
-                <a
-                    href="/listings/<%= listing._id %>/edit"
-                    class="btn btn-dark edit-btn action-btn"
-                >Edit</a>
+        <%# ── Booking Form ── %>
+        <% if (currUser) { %>
+            <% if (listing.owner && listing.owner._id && listing.owner._id.equals(currUser._id)) { %>
+                <%# Owner sees edit / delete only %>
+                <div class="btns">
+                    <a
+                        href="/listings/<%= listing._id %>/edit"
+                        class="btn btn-dark edit-btn action-btn"
+                    >Edit</a>
 
-                <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
-                    <button class="btn btn-dark delete-btn action-btn">Delete</button>
-                </form>
+                    <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+                        <button class="btn btn-dark delete-btn action-btn">Delete</button>
+                    </form>
+                </div>
+            <% } else { %>
+                <%# Regular logged-in user sees the booking form %>
+                <div class="booking-box mt-3 p-4 border rounded-3 shadow-sm" style="background:#f8f9fa;">
+                    <h5 class="mb-1 fw-bold">
+                        CA$ <%= listing.price.toLocaleString("en-CA") %>
+                        <span class="fw-normal fs-6 text-muted">/ night</span>
+                    </h5>
+
+                    <form
+                        action="/listings/<%= listing._id %>/book"
+                        method="POST"
+                        id="bookingForm"
+                        class="mt-3"
+                    >
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label for="checkIn" class="form-label fw-semibold small">CHECK-IN</label>
+                                <input
+                                    type="date"
+                                    id="checkIn"
+                                    name="checkIn"
+                                    class="form-control"
+                                    required
+                                />
+                            </div>
+                            <div class="col-6">
+                                <label for="checkOut" class="form-label fw-semibold small">CHECK-OUT</label>
+                                <input
+                                    type="date"
+                                    id="checkOut"
+                                    name="checkOut"
+                                    class="form-control"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div id="bookingSummary" class="mt-3 text-muted small" style="display:none;">
+                            <hr class="my-2"/>
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    CA$ <%= listing.price.toLocaleString("en-CA") %> &times;
+                                    <span id="nightCount">0</span> nights
+                                </span>
+                                <span>CA$ <span id="totalPrice">0</span></span>
+                            </div>
+                            <hr class="my-2"/>
+                            <div class="d-flex justify-content-between fw-bold text-dark">
+                                <span>Total</span>
+                                <span>CA$ <span id="totalPriceFinal">0</span></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-dark w-100 mt-3 py-2 fw-semibold">
+                            Book Now
+                        </button>
+                        <p class="text-center text-muted small mt-2 mb-0">
+                            A confirmation email will be sent to you.
+                        </p>
+                    </form>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div class="mt-3 p-4 border rounded-3 text-center" style="background:#f8f9fa;">
+                <p class="mb-2 fw-semibold">
+                    CA$ <%= listing.price.toLocaleString("en-CA") %> / night
+                </p>
+                <a href="/login" class="btn btn-dark px-4">Login to Book</a>
             </div>
         <% } %>
     </div>
@@ -123,3 +195,49 @@
         : null;
 </script>
 <script src="/js/map.js"></script>
+<script>
+(function () {
+    const pricePerNight = <%= listing.price %>;
+    const checkInEl    = document.getElementById("checkIn");
+    const checkOutEl   = document.getElementById("checkOut");
+    const summary      = document.getElementById("bookingSummary");
+    const nightCountEl = document.getElementById("nightCount");
+    const totalEl      = document.getElementById("totalPrice");
+    const totalFinalEl = document.getElementById("totalPriceFinal");
+
+    if (!checkInEl || !checkOutEl) return;   // not shown (owner / logged-out)
+
+    // Set minimum date to today
+    const today = new Date().toISOString().split("T")[0];
+    checkInEl.setAttribute("min", today);
+    checkOutEl.setAttribute("min", today);
+
+    function updateSummary() {
+        const ci = new Date(checkInEl.value);
+        const co = new Date(checkOutEl.value);
+        if (!checkInEl.value || !checkOutEl.value || co <= ci) {
+            summary.style.display = "none";
+            return;
+        }
+        const nights = Math.round((co - ci) / (1000 * 60 * 60 * 24));
+        const total  = nights * pricePerNight;
+        nightCountEl.textContent = nights;
+        const fmt = (n) => n.toLocaleString("en-CA");
+        totalEl.textContent      = fmt(total);
+        totalFinalEl.textContent = fmt(total);
+        summary.style.display    = "block";
+    }
+
+    checkInEl.addEventListener("change", function () {
+        // Ensure check-out is after check-in
+        if (checkOutEl.value && checkOutEl.value <= checkInEl.value) {
+            checkOutEl.value = "";
+            summary.style.display = "none";
+        }
+        checkOutEl.setAttribute("min", checkInEl.value);
+        updateSummary();
+    });
+
+    checkOutEl.addEventListener("change", updateSummary);
+})();
+</script>

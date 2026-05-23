@@ -1,0 +1,95 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-4">
+    <div class="col-10 offset-1 col-md-8 offset-md-2">
+        <h3 class="mb-4">My Bookings</h3>
+
+        <% if (bookings.length === 0) { %>
+            <div class="text-center py-5">
+                <p class="text-muted fs-5 mb-3">You haven't made any bookings yet.</p>
+                <a href="/listings" class="btn btn-dark px-4">Explore Listings</a>
+            </div>
+        <% } else { %>
+            <% for (let booking of bookings) { %>
+                <% if (!booking.listing) continue; /* listing was deleted */ %>
+                <%
+                    const now       = new Date();
+                    const checkIn   = new Date(booking.checkIn);
+                    const checkOut  = new Date(booking.checkOut);
+                    const upcoming  = checkIn > now;
+                    const active    = checkIn <= now && checkOut > now;
+                    const past      = checkOut <= now;
+
+                    const fmtDate = (d) => new Date(d).toLocaleDateString("en-CA", {
+                        weekday: "short", year: "numeric", month: "short", day: "numeric"
+                    });
+
+                    const badgeClass = upcoming ? "bg-success"
+                                    : active   ? "bg-primary"
+                                               : "bg-secondary";
+                    const badgeText  = upcoming ? "Upcoming"
+                                    : active   ? "Active"
+                                               : "Completed";
+                %>
+                <div class="card mb-4 shadow-sm border-0 rounded-3 overflow-hidden">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <img
+                                src="<%= booking.listing.image ? booking.listing.image.url : '/img/placeholder.jpg' %>"
+                                class="img-fluid h-100 w-100"
+                                style="object-fit:cover; min-height:180px;"
+                                alt="<%= booking.listing.title %>"
+                            />
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="card-title mb-1 fw-bold">
+                                        <a href="/listings/<%= booking.listing._id %>" class="text-dark text-decoration-none">
+                                            <%= booking.listing.title %>
+                                        </a>
+                                    </h5>
+                                    <span class="badge <%= badgeClass %> ms-2"><%= badgeText %></span>
+                                </div>
+                                <p class="text-muted small mb-3">
+                                    <%= booking.listing.location %>, <%= booking.listing.country %>
+                                </p>
+
+                                <div class="row text-center mb-3">
+                                    <div class="col-5 border-end">
+                                        <p class="text-muted small mb-0">CHECK-IN</p>
+                                        <p class="fw-semibold mb-0"><%= fmtDate(booking.checkIn) %></p>
+                                    </div>
+                                    <div class="col-2 d-flex align-items-center justify-content-center text-muted">
+                                        →
+                                    </div>
+                                    <div class="col-5">
+                                        <p class="text-muted small mb-0">CHECK-OUT</p>
+                                        <p class="fw-semibold mb-0"><%= fmtDate(booking.checkOut) %></p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small">
+                                        <%= booking.nights %> night<%= booking.nights !== 1 ? "s" : "" %> &middot;
+                                        <strong>CA$ <%= booking.totalPrice.toLocaleString("en-CA") %></strong>
+                                    </span>
+
+                                    <% if (upcoming) { %>
+                                        <form
+                                            method="POST"
+                                            action="/my-bookings/<%= booking._id %>?_method=DELETE"
+                                            onsubmit="return confirm('Cancel this booking?')"
+                                        >
+                                            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        <% } %>
+    </div>
+</div>

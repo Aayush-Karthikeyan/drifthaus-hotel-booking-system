@@ -19,6 +19,7 @@ const wrapAsync = require("./utils/wrapAsync.js");
 const listings = require("./routes/listing.js");
 const reviews = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
+const bookingRouter = require("./routes/booking.js");
 const User = require("./models/user.js");
 
 const dbUrl =
@@ -101,6 +102,7 @@ app.get("/", (req, res) => {
 app.use("/listings", listings);
 app.use("/listings/:id/reviews", reviews);
 app.use("/", userRouter);
+app.use("/", bookingRouter);
 
 app.all(/(.*)/, (req, res, next) => {
   next(new ExpressError(404, "Page Not Found!"));
