@@ -1,0 +1,128 @@
+<% layout("/layouts/boilerplate") %>
+
+<%
+  const categories = [
+    { label: "Trending",      icon: "fa-solid fa-fire" },
+    { label: "Rooms",         icon: "fa-solid fa-bed" },
+    { label: "Iconic Cities", icon: "fa-solid fa-mountain-city" },
+    { label: "Mountains",     icon: "fa-solid fa-mountain-sun" },
+    { label: "Castles",       icon: "fa-brands fa-fort-awesome" },
+    { label: "Amazing Pools", icon: "fa-solid fa-person-swimming" },
+    { label: "Camping",       icon: "fa-solid fa-campground" },
+    { label: "Farms",         icon: "fa-solid fa-cow" },
+    { label: "Arctic",        icon: "fa-regular fa-snowflake" },
+    { label: "Domes",         icon: "fa-solid fa-igloo" },
+    { label: "Boats",         icon: "fa-solid fa-sailboat" },
+  ];
+%>
+
+<section class="listings-toolbar" aria-label="Listing filters">
+    <div id="filters">
+        <% for (let cat of categories) { %>
+            <button
+                class="filter <%= activeCategory === cat.label ? 'active' : '' %>"
+                type="button"
+                data-category="<%= cat.label %>"
+                aria-pressed="<%= activeCategory === cat.label ? 'true' : 'false' %>"
+            >
+                <i class="<%= cat.icon %>"></i>
+                <span><%= cat.label %></span>
+            </button>
+        <% } %>
+    </div>
+
+    <div class="tax-toggle">
+        <span>Display total after taxes</span>
+        <div class="form-check form-switch mb-0">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="taxSwitch"
+                aria-label="Display total after taxes"
+            />
+        </div>
+    </div>
+</section>
+
+<% if (activeCategory) { %>
+    <div class="search-summary">
+        <span><i class="fa-solid fa-tag me-1"></i> Category: <%= activeCategory %></span>
+        <a href="/listings<%= searchQuery ? '?search=' + encodeURIComponent(searchQuery) : '' %>">Clear filter</a>
+    </div>
+<% } else if (typeof searchQuery !== "undefined" && searchQuery) { %>
+    <div class="search-summary">
+        <span>Results for "<%= searchQuery %>"</span>
+        <a href="/listings">Clear search</a>
+    </div>
+<% } %>
+
+<% if (!allListings.length) { %>
+    <div class="empty-state">
+        <i class="fa-regular fa-compass"></i>
+        <h3>No stays found</h3>
+        <p>Try searching by city, country, or listing name.</p>
+    </div>
+<% } %>
+
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 listing-grid">
+    <% for (let listing of allListings) { %>
+        <a href="/listings/<%= listing._id %>" class="listing-link">
+            <div class="card col listing-card">
+                <img
+                    src="<%= listing.image.url %>"
+                    class="card-img-top"
+                    alt="listing_image"
+                />
+                <div class="card-img-overlay"></div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <b><%= listing.title %></b>
+                        <br />
+                        <span class="base-price">
+                            &#8377; <%= listing.price.toLocaleString("en-IN") %> / night
+                        </span>
+                        <span class="tax-info">
+                            &#8377; <%= Math.round(listing.price * 1.18).toLocaleString("en-IN") %> / night
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </a>
+    <% } %>
+</div>
+
+<script>
+    // ── Tax toggle ──────────────────────────────────────────────
+    const taxSwitch = document.getElementById("taxSwitch");
+    const basePrices = document.querySelectorAll(".base-price");
+    const taxPrices = document.querySelectorAll(".tax-info");
+
+    taxSwitch.addEventListener("change", () => {
+        basePrices.forEach((price) => {
+            price.style.display = taxSwitch.checked ? "none" : "inline";
+        });
+        taxPrices.forEach((price) => {
+            price.style.display = taxSwitch.checked ? "inline" : "none";
+        });
+    });
+
+    // ── Category filter buttons ─────────────────────────────────
+    const activeCategory = "<%= activeCategory %>";
+
+    document.querySelectorAll(".filter[data-category]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const cat = btn.dataset.category;
+            const params = new URLSearchParams(window.location.search);
+
+            if (cat === activeCategory) {
+                // clicking the active filter → clear it
+                params.delete("category");
+            } else {
+                params.set("category", cat);
+            }
+
+            window.location.href = "/listings" + (params.toString() ? "?" + params.toString() : "");
+        });
+    });
+</script>

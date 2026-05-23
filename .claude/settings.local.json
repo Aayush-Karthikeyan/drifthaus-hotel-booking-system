@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"require\\('joi'\\); console.log\\('joi ok'\\)\")",
+      "Bash(npm install *)",
+      "Bash(dir d:/AP/Coding/MajorProject/views/listings /b)",
+      "Bash(dir d:/AP/Coding/MajorProject/routes /b)",
+      "Bash(dir d:/AP/Coding/MajorProject/controllers /b)",
+      "Bash(dir d:/AP/Coding/MajorProject/init /b)",
+      "Bash(node --check controllers/listings.js)",
+      "Bash(node --check models/listing.js)",
+      "Bash(node --check init/data.js)"
+    ]
+  }
+}
