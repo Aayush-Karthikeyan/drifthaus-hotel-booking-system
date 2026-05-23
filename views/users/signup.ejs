@@ -1,8 +1,10 @@
 <% layout("/layouts/boilerplate") %>
 
-<div class="row mt-3">
-    <h1 class="col-6 offset-3">Sign up on Drifthaus</h1>
-    <div class="col-6 offset-3">
+<div class="auth-page">
+    <div class="auth-card">
+        <h2 class="auth-title">Sign up on Drifthaus</h2>
+        <p class="auth-subtitle">Find your next stay, anywhere in the world.</p>
+
         <form action="/signup" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
@@ -10,7 +12,8 @@
                     name="username"
                     id="username"
                     type="text"
-                    class="form-control"
+                    class="form-control auth-input"
+                    placeholder="e.g. johndoe"
                     required
                 />
                 <div class="valid-feedback">Looks good!</div>
@@ -21,23 +24,27 @@
                     name="email"
                     id="email"
                     type="email"
-                    class="form-control"
+                    class="form-control auth-input"
+                    placeholder="you@email.com"
                     required
                 />
                 <div class="valid-feedback">Looks good!</div>
             </div>
-            <div class="mb-3">
+            <div class="mb-4">
                 <label for="password" class="form-label">Password</label>
                 <input
                     name="password"
                     id="password"
                     type="password"
-                    class="form-control"
+                    class="form-control auth-input"
+                    placeholder="Min. 6 characters"
                     required
                 />
                 <div class="valid-feedback">Looks good!</div>
             </div>
-            <button class="btn btn-success">SignUp</button>
+            <button class="btn auth-btn w-100">Sign Up</button>
         </form>
+
+        <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
     </div>
 </div>

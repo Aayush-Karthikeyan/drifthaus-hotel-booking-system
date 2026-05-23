@@ -1,8 +1,10 @@
 <% layout("/layouts/boilerplate") %>
 
-<div class="row mt-3">
-    <h1 class="col-6 offset-3">Login</h1>
-    <div class="col-6 offset-3">
+<div class="auth-page">
+    <div class="auth-card">
+        <h2 class="auth-title">Welcome back</h2>
+        <p class="auth-subtitle">Log in to your Drifthaus account.</p>
+
         <form action="/login" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
@@ -10,23 +12,27 @@
                     name="username"
                     id="username"
                     type="text"
-                    class="form-control"
+                    class="form-control auth-input"
+                    placeholder="Your username"
                     required
                 />
                 <div class="valid-feedback">Looks good!</div>
             </div>
-            <div class="mb-3">
+            <div class="mb-4">
                 <label for="password" class="form-label">Password</label>
                 <input
                     name="password"
                     id="password"
                     type="password"
-                    class="form-control"
+                    class="form-control auth-input"
+                    placeholder="Your password"
                     required
                 />
                 <div class="valid-feedback">Looks good!</div>
             </div>
-            <button class="btn btn-success">Login</button>
+            <button class="btn auth-btn w-100">Log In</button>
         </form>
+
+        <p class="auth-switch">Don't have an account? <a href="/signup">Sign up</a></p>
     </div>
 </div>
