@@ -54,31 +54,31 @@ module.exports.createBooking = async (req, res) => {
   await booking.save();
   console.log("BOOKING SAVED:", booking._id);
 
-  // Send confirmation email (non-blocking — don't crash on mail failure)
-  try {
-    await sendBookingConfirmation({
-      toEmail:    req.user.email,
-      username:   req.user.username,
-      title:      listing.title,
-      location:   listing.location,
-      country:    listing.country,
-      imageUrl:   listing.image ? listing.image.url : "",
-      checkIn:    checkInDate,
-      checkOut:   checkOutDate,
-      nights,
-      totalPrice,
-      listingId:  listing._id.toString(),
-    });
+  // Redirect immediately — send email in background so it never blocks the response
+  req.flash("success", `Booking confirmed! A confirmation email has been sent to ${req.user.email}.`);
+  res.redirect("/my-bookings");
+
+  // Fire-and-forget email (runs after response is sent)
+  sendBookingConfirmation({
+    toEmail:    req.user.email,
+    username:   req.user.username,
+    title:      listing.title,
+    location:   listing.location,
+    country:    listing.country,
+    imageUrl:   listing.image ? listing.image.url : "",
+    checkIn:    checkInDate,
+    checkOut:   checkOutDate,
+    nights,
+    totalPrice,
+    listingId:  listing._id.toString(),
+  }).then(() => {
     console.log("EMAIL SENT to:", req.user.email);
-  } catch (mailErr) {
+  }).catch((mailErr) => {
     console.error("EMAIL FAILED:", mailErr.message, mailErr.code || "");
     console.error("  toEmail:", req.user.email);
     console.error("  BREVO_LOGIN:", process.env.BREVO_LOGIN);
     console.error("  BREVO_SMTP_KEY set:", !!process.env.BREVO_SMTP_KEY);
-  }
-
-  req.flash("success", `Booking confirmed! A confirmation email has been sent to ${req.user.email}.`);
-  res.redirect("/my-bookings");
+  });
 };
 
 // GET /my-bookings
