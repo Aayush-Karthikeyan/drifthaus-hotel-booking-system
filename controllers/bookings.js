@@ -1,12 +1,13 @@
 const Booking = require("../models/booking.js");
 const Listing = require("../models/listing.js");
 const { sendBookingConfirmation } = require("../utils/mailer.js");
-const ExpressError = require("../utils/ExpressError.js");
 
 // POST /listings/:id/book
 module.exports.createBooking = async (req, res) => {
   const { id } = req.params;
   const { checkIn, checkOut } = req.body;
+
+  console.log("BOOKING ATTEMPT — checkIn:", checkIn, "checkOut:", checkOut, "user:", req.user && req.user.email);
 
   const listing = await Listing.findById(id);
   if (!listing) {
@@ -14,10 +15,16 @@ module.exports.createBooking = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  const checkInDate  = new Date(checkIn);
-  const checkOutDate = new Date(checkOut);
-  const today        = new Date();
+  // Parse as local date strings (YYYY-MM-DD) without timezone conversion
+  const [ciY, ciM, ciD] = checkIn.split("-").map(Number);
+  const [coY, coM, coD] = checkOut.split("-").map(Number);
+  const checkInDate  = new Date(ciY, ciM - 1, ciD);
+  const checkOutDate = new Date(coY, coM - 1, coD);
+
+  const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  console.log("BOOKING — parsed checkIn:", checkInDate, "checkOut:", checkOutDate, "today:", today);
 
   if (isNaN(checkInDate) || isNaN(checkOutDate)) {
     req.flash("error", "Invalid dates. Please try again.");
@@ -45,6 +52,7 @@ module.exports.createBooking = async (req, res) => {
     totalPrice,
   });
   await booking.save();
+  console.log("BOOKING SAVED:", booking._id);
 
   // Send confirmation email (non-blocking — don't crash on mail failure)
   try {
@@ -61,8 +69,9 @@ module.exports.createBooking = async (req, res) => {
       totalPrice,
       listingId:  listing._id.toString(),
     });
+    console.log("EMAIL SENT to:", req.user.email);
   } catch (mailErr) {
-    console.error("Booking email failed:", mailErr.message, mailErr.code || "");
+    console.error("EMAIL FAILED:", mailErr.message, mailErr.code || "");
     console.error("  toEmail:", req.user.email);
     console.error("  GMAIL_USER:", process.env.GMAIL_USER);
     console.error("  GMAIL_PASS set:", !!process.env.GMAIL_PASS);
@@ -91,7 +100,6 @@ module.exports.cancelBooking = async (req, res) => {
     return res.redirect("/my-bookings");
   }
 
-  // Allow cancel only if check-in is in the future
   if (new Date(booking.checkIn) <= new Date()) {
     req.flash("error", "Cannot cancel a booking whose check-in date has already passed.");
     return res.redirect("/my-bookings");
