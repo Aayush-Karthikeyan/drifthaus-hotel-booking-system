@@ -73,8 +73,8 @@ module.exports.createBooking = async (req, res) => {
   } catch (mailErr) {
     console.error("EMAIL FAILED:", mailErr.message, mailErr.code || "");
     console.error("  toEmail:", req.user.email);
-    console.error("  GMAIL_USER:", process.env.GMAIL_USER);
-    console.error("  GMAIL_PASS set:", !!process.env.GMAIL_PASS);
+    console.error("  BREVO_LOGIN:", process.env.BREVO_LOGIN);
+    console.error("  BREVO_SMTP_KEY set:", !!process.env.BREVO_SMTP_KEY);
   }
 
   req.flash("success", `Booking confirmed! A confirmation email has been sent to ${req.user.email}.`);
