@@ -12,11 +12,6 @@
             />
             <div class="card-body">
                 <p class="card-text">
-                    <i>
-                        Owned by
-                        <%= listing.owner && listing.owner.username ? listing.owner.username : "Drifthaus" %>
-                    </i>
-                    <br /><br />
                     <%= listing.description %>
                     <br />
                     CA$ <%= listing.price.toLocaleString("en-CA") %> / night
