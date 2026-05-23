@@ -81,7 +81,7 @@ async function sendBookingConfirmation(opts) {
 </html>`;
 
   const payload = JSON.stringify({
-    sender: { name: "Drifthaus", email: process.env.BREVO_LOGIN },
+    sender: { name: "Drifthaus", email: "ac451c001@smtp-brevo.com" },
     to: [{ email: toEmail, name: username }],
     subject: `Booking Confirmed – ${title} 🏨`,
     htmlContent: html,
