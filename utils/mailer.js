@@ -1,29 +1,7 @@
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 25,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_LOGIN,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-});
+const https = require("https");
 
 /**
- * Send a booking confirmation email.
- * @param {Object} opts
- * @param {string} opts.toEmail   - recipient email
- * @param {string} opts.username  - recipient's display name
- * @param {string} opts.title     - listing title
- * @param {string} opts.location  - listing location
- * @param {string} opts.country   - listing country
- * @param {string} opts.imageUrl  - listing image URL
- * @param {Date}   opts.checkIn
- * @param {Date}   opts.checkOut
- * @param {number} opts.nights
- * @param {number} opts.totalPrice
- * @param {string} opts.listingId - MongoDB ObjectId string
+ * Send a booking confirmation email via Brevo HTTP API.
  */
 async function sendBookingConfirmation(opts) {
   const {
@@ -72,72 +50,67 @@ async function sendBookingConfirmation(opts) {
     <h1>🏨 Drifthaus</h1>
     <p>Your home away from home</p>
   </div>
-
   ${imageUrl ? `<img src="${imageUrl}" alt="${title}" class="banner"/>` : ""}
-
   <div class="body">
     <p class="greeting">Hi ${username}! Your booking is confirmed 🎉</p>
     <p class="sub">Thank you for choosing Drifthaus. Here are your booking details:</p>
-
     <div class="card">
       <h2>📍 Property</h2>
-      <div class="row">
-        <span class="label">Listing</span>
-        <span class="value">${title}</span>
-      </div>
-      <div class="row">
-        <span class="label">Location</span>
-        <span class="value">${location}, ${country}</span>
-      </div>
+      <div class="row"><span class="label">Listing</span><span class="value">${title}</span></div>
+      <div class="row"><span class="label">Location</span><span class="value">${location}, ${country}</span></div>
     </div>
-
     <div class="card">
       <h2>📅 Stay Details</h2>
-      <div class="row">
-        <span class="label">Check-in</span>
-        <span class="value">${fmt(checkIn)}</span>
-      </div>
-      <div class="row">
-        <span class="label">Check-out</span>
-        <span class="value">${fmt(checkOut)}</span>
-      </div>
-      <div class="row">
-        <span class="label">Duration</span>
-        <span class="value">${nights} night${nights !== 1 ? "s" : ""}</span>
-      </div>
+      <div class="row"><span class="label">Check-in</span><span class="value">${fmt(checkIn)}</span></div>
+      <div class="row"><span class="label">Check-out</span><span class="value">${fmt(checkOut)}</span></div>
+      <div class="row"><span class="label">Duration</span><span class="value">${nights} night${nights !== 1 ? "s" : ""}</span></div>
       <hr class="divider"/>
       <div class="row total">
         <span class="label"><strong>Total</strong></span>
         <span class="value">CA$ ${totalPrice.toLocaleString("en-CA")}</span>
       </div>
     </div>
-
-    <p style="color:#495057;font-size:14px;margin-bottom:20px;">
-      Need to make changes? Contact the host directly through the listing page.
-    </p>
-
     <a href="${siteUrl}/listings/${listingId}" class="btn">View Listing</a>
-
-    <p style="margin-top:28px;color:#6c757d;font-size:13px;">
-      If you didn't make this booking, please ignore this email or
-      <a href="${siteUrl}" style="color:#212529;">contact us</a>.
-    </p>
   </div>
-
   <div class="footer">
     © ${new Date().getFullYear()} Drifthaus · All rights reserved<br/>
     <a href="${siteUrl}/my-bookings" style="color:#495057;">View all my bookings</a>
   </div>
 </div>
 </body>
-</html>
-`;
+</html>`;
 
-  await transporter.sendMail({
-    from: `"Drifthaus" <${process.env.BREVO_LOGIN}>`,
-    to: toEmail,
+  const payload = JSON.stringify({
+    sender: { name: "Drifthaus", email: process.env.BREVO_LOGIN },
+    to: [{ email: toEmail, name: username }],
     subject: `Booking Confirmed – ${title} 🏨`,
-    html,
+    htmlContent: html,
+  });
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: "api.brevo.com",
+      path: "/v3/smtp/email",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "Content-Length": Buffer.byteLength(payload),
+      },
+    }, (res) => {
+      let data = "";
+      res.on("data", (chunk) => { data += chunk; });
+      res.on("end", () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(data);
+        } else {
+          reject(new Error(`Brevo API error ${res.statusCode}: ${data}`));
+        }
+      });
+    });
+    req.on("error", reject);
+    req.write(payload);
+    req.end();
   });
 }
 
