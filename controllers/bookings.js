@@ -62,7 +62,10 @@ module.exports.createBooking = async (req, res) => {
       listingId:  listing._id.toString(),
     });
   } catch (mailErr) {
-    console.error("Booking email failed:", mailErr.message);
+    console.error("Booking email failed:", mailErr.message, mailErr.code || "");
+    console.error("  toEmail:", req.user.email);
+    console.error("  GMAIL_USER:", process.env.GMAIL_USER);
+    console.error("  GMAIL_PASS set:", !!process.env.GMAIL_PASS);
   }
 
   req.flash("success", `Booking confirmed! A confirmation email has been sent to ${req.user.email}.`);
