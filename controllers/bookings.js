@@ -39,6 +39,18 @@ module.exports.createBooking = async (req, res) => {
     return res.redirect(`/listings/${id}`);
   }
 
+  // Check for overlapping bookings
+  const conflict = await Booking.findOne({
+    listing: listing._id,
+    $or: [
+      { checkIn:  { $lt: checkOutDate }, checkOut: { $gt: checkInDate } },
+    ],
+  });
+  if (conflict) {
+    req.flash("error", "Sorry, those dates are already booked. Please choose different dates.");
+    return res.redirect(`/listings/${id}`);
+  }
+
   const MS_PER_DAY = 1000 * 60 * 60 * 24;
   const nights     = Math.round((checkOutDate - checkInDate) / MS_PER_DAY);
   const totalPrice = nights * listing.price;

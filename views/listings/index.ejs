@@ -85,6 +85,13 @@
                         <span class="tax-info">
                             CA$ <%= Math.round(listing.price * 1.13).toLocaleString("en-CA") %> / night
                         </span>
+                        <% const cnt = countMap[listing._id.toString()]; %>
+                        <% if (cnt) { %>
+                            <br/>
+                            <span style="font-size:12px; color:#888;">
+                                🔥 <%= cnt %> booking<%= cnt !== 1 ? "s" : "" %>
+                            </span>
+                        <% } %>
                     </p>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 const Listing = require("../models/listing.js");
+const Booking = require("../models/booking.js");
 const axios = require("axios");
 
 function escapeRegex(text) {
@@ -52,7 +53,15 @@ module.exports.index = async (req, res) => {
   }
 
   const allListings = await Listing.find(query);
-  res.render("listings/index.ejs", { allListings, searchQuery, activeCategory });
+
+  // Get booking counts for all listings
+  const bookingCounts = await Booking.aggregate([
+    { $group: { _id: "$listing", count: { $sum: 1 } } }
+  ]);
+  const countMap = {};
+  bookingCounts.forEach(b => { countMap[b._id.toString()] = b.count; });
+
+  res.render("listings/index.ejs", { allListings, searchQuery, activeCategory, countMap });
 };
 
 module.exports.renderNewForm = (req, res) => {
@@ -73,7 +82,18 @@ module.exports.showListing = async (req, res) => {
     req.flash("error", "Listing you requested does not exist!");
     return res.redirect("/listings");
   }
-  res.render("listings/show.ejs", { listing });
+
+  // Get all booked date ranges for this listing (to block on date picker)
+  const bookings = await Booking.find({ listing: id }, "checkIn checkOut");
+  const bookedRanges = bookings.map(b => ({
+    checkIn:  b.checkIn.toISOString().split("T")[0],
+    checkOut: b.checkOut.toISOString().split("T")[0],
+  }));
+
+  // Get total booking count
+  const bookingCount = bookings.length;
+
+  res.render("listings/show.ejs", { listing, bookedRanges, bookingCount });
 };
 
 module.exports.createListing = async (req, res, next) => {
