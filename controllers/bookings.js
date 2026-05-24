@@ -40,12 +40,16 @@ module.exports.createBooking = async (req, res) => {
   }
 
   // Check for overlapping bookings
-  const conflict = await Booking.findOne({
-    listing: listing._id,
-    $or: [
-      { checkIn:  { $lt: checkOutDate }, checkOut: { $gt: checkInDate } },
-    ],
+  const existingBookings = await Booking.find({ listing: listing._id });
+  console.log("CONFLICT CHECK — checkIn:", checkInDate, "checkOut:", checkOutDate);
+  console.log("EXISTING BOOKINGS:", existingBookings.map(b => ({ in: b.checkIn, out: b.checkOut })));
+
+  const conflict = existingBookings.find(b => {
+    return checkInDate < b.checkOut && checkOutDate > b.checkIn;
   });
+
+  console.log("CONFLICT FOUND:", !!conflict);
+
   if (conflict) {
     req.flash("error", "Sorry, those dates are already booked. Please choose different dates.");
     return res.redirect(`/listings/${id}`);
