@@ -34,6 +34,8 @@
 - 📧 **Confirmation email** sent automatically with full booking details
 - 📋 **My Bookings** page — Upcoming / Active / Completed badges
 - ❌ Cancel upcoming bookings before check-in
+- 🔥 **Booking count** shown on every listing card
+- 🚫 **Double booking prevention** — red warning shown instantly for conflicting dates, blocked on server too
 
 ### 🔐 Authentication
 - Secure signup / login with **Passport.js** (Local Strategy)

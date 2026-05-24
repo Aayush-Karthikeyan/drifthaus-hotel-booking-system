@@ -7,8 +7,6 @@ module.exports.createBooking = async (req, res) => {
   const { id } = req.params;
   const { checkIn, checkOut } = req.body;
 
-  console.log("BOOKING ATTEMPT — checkIn:", checkIn, "checkOut:", checkOut, "user:", req.user && req.user.email);
-
   const listing = await Listing.findById(id);
   if (!listing) {
     req.flash("error", "Listing not found.");
@@ -23,8 +21,6 @@ module.exports.createBooking = async (req, res) => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  console.log("BOOKING — parsed checkIn:", checkInDate, "checkOut:", checkOutDate, "today:", today);
 
   if (isNaN(checkInDate) || isNaN(checkOutDate)) {
     req.flash("error", "Invalid dates. Please try again.");
@@ -41,14 +37,7 @@ module.exports.createBooking = async (req, res) => {
 
   // Check for overlapping bookings
   const existingBookings = await Booking.find({ listing: listing._id });
-  console.log("CONFLICT CHECK — checkIn:", checkInDate, "checkOut:", checkOutDate);
-  console.log("EXISTING BOOKINGS:", existingBookings.map(b => ({ in: b.checkIn, out: b.checkOut })));
-
-  const conflict = existingBookings.find(b => {
-    return checkInDate < b.checkOut && checkOutDate > b.checkIn;
-  });
-
-  console.log("CONFLICT FOUND:", !!conflict);
+  const conflict = existingBookings.find(b => checkInDate < b.checkOut && checkOutDate > b.checkIn);
 
   if (conflict) {
     req.flash("error", "Sorry, those dates are already booked. Please choose different dates.");
@@ -68,7 +57,6 @@ module.exports.createBooking = async (req, res) => {
     totalPrice,
   });
   await booking.save();
-  console.log("BOOKING SAVED:", booking._id);
 
   // Redirect immediately — send email in background so it never blocks the response
   req.flash("success", `Booking confirmed! A confirmation email has been sent to ${req.user.email}.`);
