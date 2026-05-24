@@ -1,42 +1,204 @@
-# Drifthaus Hotel Booking System
+# 🏨 Drifthaus — Hotel Booking System
 
-Drifthaus is a full-stack hotel booking and travel listings application built with Express, MongoDB Atlas, EJS, Passport authentication, Cloudinary image uploads, and Leaflet maps.
+> A full-stack hotel listings and booking web app built as a major project.
 
-## Features
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-6c63ff?style=for-the-badge&logo=render)](https://drifthaus-hotel-booking-system.onrender.com)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/Aayush-Karthikeyan/drifthaus-hotel-booking-system)
+![Node.js](https://img.shields.io/badge/Node.js-22+-339933?style=for-the-badge&logo=nodedotjs)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb)
+![Express](https://img.shields.io/badge/Express-5-000000?style=for-the-badge&logo=express)
 
-- User signup, login, and logout
-- Create, edit, delete, and browse listings
-- Cloudinary image uploads
-- Reviews and ratings
-- Listing map with Leaflet
-- Search by title, location, or country
-- Category filter buttons (Trending, Rooms, Iconic Cities, Mountains, Castles, etc.)
-- Tax toggle to show price including 18% GST
-- MongoDB Atlas database and session storage
+---
 
-## Tech Stack
+## 🌐 Live Site
 
-- Node.js
-- Express
-- MongoDB Atlas
-- Mongoose
-- EJS and EJS Mate
-- Passport
-- Cloudinary
-- Leaflet
-- Bootstrap
+**[https://drifthaus-hotel-booking-system.onrender.com](https://drifthaus-hotel-booking-system.onrender.com)**
 
-## Local Setup
+> ⚠️ Hosted on Render's free tier — may take 30–60 seconds to wake up on first visit.
+
+---
+
+## ✨ Features
+
+### 🏠 Listings
+- Browse hotel listings with interactive **Leaflet maps**
+- 🔍 **Search** by title, location, or country
+- 🏷️ **Filter by category** — Trending, Rooms, Mountains, Castles, Boats, Domes & more
+- 📸 **Image upload** via Cloudinary
+- ➕ Create, edit, and delete your own listings
+- ⭐ **Reviews & star ratings** on every listing
+
+### 📅 Booking System
+- Date picker with **live price calculator** — shows nights × price + total instantly
+- **Book Now** — saves booking instantly and redirects to My Bookings
+- 📧 **Confirmation email** sent automatically with full booking details
+- 📋 **My Bookings** page — Upcoming / Active / Completed badges
+- ❌ Cancel upcoming bookings before check-in
+
+### 🔐 Authentication
+- Secure signup / login with **Passport.js** (Local Strategy)
+- Session management with **MongoDB-backed sessions**
+- Owner-only edit/delete controls on listings
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Node.js, Express 5 |
+| **Database** | MongoDB Atlas, Mongoose |
+| **Templating** | EJS, EJS-Mate |
+| **Authentication** | Passport.js, passport-local-mongoose |
+| **Image Storage** | Cloudinary, Multer |
+| **Maps** | Leaflet.js + OpenStreetMap (Nominatim geocoding) |
+| **Email** | Brevo HTTP API |
+| **Session Store** | connect-mongo |
+| **Validation** | Joi |
+| **Hosting** | Render |
+
+---
+
+## 🚀 Getting Started Locally
+
+### Prerequisites
+- Node.js v22+
+- MongoDB Atlas account (or local MongoDB)
+- Cloudinary account
+- Brevo account (for emails)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Aayush-Karthikeyan/drifthaus-hotel-booking-system.git
+cd drifthaus-hotel-booking-system
+```
+
+### 2. Install dependencies
 
 ```bash
 npm install
-npm start
 ```
 
-Create a `.env` file using `.env.example` as the template.
+### 3. Set up environment variables
 
-## Render Settings
+Create a `.env` file in the root directory:
 
-- Build Command: `npm install`
-- Start Command: `npm start`
-- Environment Variables: add all keys from `.env.example` with your real values
+```env
+ATLAS_URL=your_mongodb_atlas_connection_string
+SECRET=your_session_secret
+
+CLOUD_NAME=your_cloudinary_cloud_name
+CLOUD_API_KEY=your_cloudinary_api_key
+CLOUD_API_SECRET=your_cloudinary_api_secret
+
+BREVO_LOGIN=your_brevo_smtp_login
+BREVO_SMTP_KEY=your_brevo_smtp_key
+BREVO_API_KEY=your_brevo_api_key
+
+SITE_URL=http://localhost:8080
+```
+
+### 4. Seed the database (optional)
+
+```bash
+npm run seed
+```
+
+### 5. Run the development server
+
+```bash
+npm run dev
+```
+
+Visit **[http://localhost:8080](http://localhost:8080)**
+
+---
+
+## 📁 Project Structure
+
+```
+drifthaus-hotel-booking-system/
+├── app.js                  # Entry point
+├── middleware.js            # Auth & validation middleware
+├── schema.js               # Joi validation schemas
+├── cloudConfig.js          # Cloudinary config
+│
+├── models/
+│   ├── listing.js          # Listing schema
+│   ├── review.js           # Review schema
+│   ├── user.js             # User schema
+│   └── booking.js          # Booking schema
+│
+├── controllers/
+│   ├── listings.js         # Listing logic
+│   ├── reviews.js          # Review logic
+│   ├── users.js            # Auth logic
+│   └── bookings.js         # Booking logic
+│
+├── routes/
+│   ├── listing.js          # Listing routes
+│   ├── review.js           # Review routes
+│   ├── user.js             # Auth routes
+│   └── booking.js          # Booking routes
+│
+├── views/
+│   ├── layouts/            # EJS boilerplate layout
+│   ├── includes/           # Navbar, footer, flash messages
+│   ├── listings/           # Listing pages (index, show, new, edit)
+│   ├── users/              # Signup & login pages
+│   └── bookings/           # My Bookings page
+│
+├── public/
+│   ├── css/                # Stylesheets
+│   └── js/                 # Client-side JS (map, filters)
+│
+├── utils/
+│   ├── ExpressError.js     # Custom error class
+│   ├── wrapAsync.js        # Async error wrapper
+│   └── mailer.js           # Brevo email utility
+│
+└── init/
+    └── index.js            # Database seeder
+```
+
+---
+
+## 📧 How the Booking System Works
+
+1. User opens any listing's show page
+2. Picks **check-in** and **check-out** dates — total price updates live
+3. Clicks **Book Now** — booking saved to MongoDB instantly
+4. **Confirmation email** sent via Brevo API with listing photo, dates, and total
+5. Redirected to **My Bookings** page
+6. Upcoming bookings can be **cancelled** at any time before check-in
+
+---
+
+## 🔑 Environment Variables
+
+| Variable | Description |
+|---|---|
+| `ATLASDB_URL` | MongoDB Atlas connection string |
+| `SECRET` | Session secret key |
+| `CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUD_API_KEY` | Cloudinary API key |
+| `CLOUD_API_SECRET` | Cloudinary API secret |
+| `BREVO_LOGIN` | Brevo SMTP login email |
+| `BREVO_SMTP_KEY` | Brevo SMTP key |
+| `BREVO_API_KEY` | Brevo API key |
+| `SITE_URL` | Your live site URL |
+| `NODE_ENV` | Set to `production` on Render |
+
+---
+
+## 👨‍💻 Author
+
+**Aayush Karthikeyan**  
+Built as a Major Project — full-stack web development with Node.js, Express, and MongoDB.
+
+---
+
+## 📄 License
+
+This project is for educational purposes.
